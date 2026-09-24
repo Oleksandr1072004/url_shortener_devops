@@ -59,7 +59,7 @@ jobs:
           DATABASE_URL: sqlite:///./test.db
 
   build:
-    name: Build ${{ matrix.service }}
+    name: Build (${{ matrix.service }})
     needs: [lint, test]
     runs-on: ubuntu-latest
     strategy:
