@@ -53,3 +53,7 @@ def test_stats_increments_clicks():
 def test_unknown_code_returns_404():
     r = client.get("/nonexistent", follow_redirects=False)
     assert r.status_code == 404
+
+    
+def test_intentionally_failing():
+    assert False
