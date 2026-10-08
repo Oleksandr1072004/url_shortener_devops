@@ -1,60 +1,48 @@
-# URL Shortener — DevOps Lab 1
+## Розгортання в Kubernetes (Lab 3)
 
-Мікросервісний застосунок для скорочення URL з PostgreSQL та Docker Compose.
+### Передумови
+- minikube ≥ 1.30
+- kubectl
+- Docker Desktop
 
-## Архітектура
-
-- **api-gateway** (FastAPI, :8000) — створює короткі посилання, редіректить, рахує кліки
-- **analytics-service** (FastAPI, :8001) — агрегована статистика
-- **db** (PostgreSQL 16) — спільна база даних
-
-## Швидкий старт
-
+### Запуск кластера
 ```bash
-cp .env.example .env
-docker compose up --build
+minikube start --driver=docker --cpus=2 --memory=4g
+minikube addons enable ingress
+minikube addons enable metrics-server
 ```
 
-## Ендпоінти
-
-### api-gateway (http://localhost:8000)
-
-| Метод | Шлях | Опис |
-|---|---|---|
-| GET | `/health` | Перевірка стану |
-| POST | `/shorten` | Тіло: `{"url": "https://..."}` → `{code, short_url}` |
-| GET | `/{code}` | Редірект на оригінальний URL |
-| GET | `/stats/{code}` | Статистика конкретного коду |
-
-### analytics-service (http://localhost:8001)
-
-| Метод | Шлях | Опис |
-|---|---|---|
-| GET | `/health` | Перевірка стану |
-| GET | `/stats/total` | Всього посилань і кліків |
-| GET | `/stats/top?limit=5` | Топ посилань за кліками |
-| GET | `/stats/{code}` | Статистика коду |
-
-## Приклад використання
-
+### Збірка образів всередині minikube
 ```bash
-curl -X POST http://localhost:8000/shorten \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://google.com"}'
-
-curl -L http://localhost:8000/<code>
-
-curl http://localhost:8001/stats/total
+minikube docker-env | Invoke-Expression   # PowerShell
+docker build -t api-gateway:1.0.0 ./api-gateway
+docker build -t api-gateway:1.1.0 ./api-gateway
 ```
 
-## Тести
-
+### Розгортання
 ```bash
-docker compose exec api-gateway pytest -v
+kubectl apply -f k8s/
+kubectl get pods -n url-shortener
 ```
 
-## Стек
+### Параметри ConfigMap
 
-- Python 3.11, FastAPI, SQLAlchemy 2, PostgreSQL 16
-- Docker, Docker Compose
-- Pytest, httpx
+| Ключ | Опис | Значення |
+|------|------|----------|
+| `BASE_URL` | Базовий URL застосунку | `http://url-shortener.local` |
+| `CODE_LENGTH` | Довжина короткого коду | `6` |
+
+### Параметри Secret
+
+| Ключ | Опис |
+|------|------|
+| `DATABASE_URL` | Рядок підключення до PostgreSQL (base64) |
+
+> **Увага:** реальні паролі в Secret не зберігаються — лише тестові значення.
+
+### Доступ до застосунку
+```bash
+minikube service api-gateway-service -n url-shortener --url
+# або через Ingress
+echo "$(minikube ip) url-shortener.local" | sudo tee -a /etc/hosts
+```
