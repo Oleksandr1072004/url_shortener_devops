@@ -1,0 +1,14 @@
+Дякуємо за встановлення {{ .Chart.Name }}!
+
+Для доступу до застосунку:
+
+{{- if .Values.ingress.enabled }}
+1. Додайте до hosts: {{ .Values.ingress.host }}
+2. Відкрийте http://{{ .Values.ingress.host }}
+{{- else }}
+Виконайте:
+  minikube service {{ include "url-shortener.fullname" . }}-service -n {{ .Release.Namespace }} --url
+{{- end }}
+
+Перевірка статусу:
+  kubectl get pods -n {{ .Release.Namespace }}

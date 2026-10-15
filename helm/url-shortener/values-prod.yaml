@@ -1,0 +1,23 @@
+replicaCount: 3
+
+image:
+  tag: "1.1.0"
+
+service:
+  type: LoadBalancer
+
+ingress:
+  enabled: true
+  host: url-shortener.example.com
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "200m"
+  limits:
+    memory: "512Mi"
+    cpu: "1000m"
+
+config:
+  baseUrl: "https://url-shortener.example.com"
+  codeLength: "7"
