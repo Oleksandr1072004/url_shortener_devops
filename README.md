@@ -1,4 +1,5 @@
 | Параметр |	Опис |	Default |
+|---|---|---|
 | replicaCount |	Кількість реплік |	2 |
 | image.repository |	Репозиторій образу |	api-gateway |
 | image.tag |	Тег образу |	1.0.0 |
